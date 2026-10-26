@@ -1986,6 +1986,19 @@ def _build_checkpoint_conversion_mapping():
             WeightRenaming(r"^head\.decoder\.", "lm_head."),
             WeightRenaming(r"^head\.", "projection_head."),
         ],
+        # QA heads that use GenericForQuestionAnswering with base_model_prefix="transformer"
+        "ArceeForQuestionAnswering": [WeightRenaming(r"^model\.", "transformer.")],
+        "DiffLlamaForQuestionAnswering": [WeightRenaming(r"^model\.", "transformer.")],
+        "Exaone4ForQuestionAnswering": [WeightRenaming(r"^model\.", "transformer.")],
+        "LlamaForQuestionAnswering": [WeightRenaming(r"^model\.", "transformer.")],
+        "Qwen2ForQuestionAnswering": [WeightRenaming(r"^model\.", "transformer.")],
+        "Qwen3ForQuestionAnswering": [WeightRenaming(r"^model\.", "transformer.")],
+        "Qwen3MoeForQuestionAnswering": [WeightRenaming(r"^model\.", "transformer.")],
+        "Qwen3NextForQuestionAnswering": [WeightRenaming(r"^model\.", "transformer.")],
+        "NemotronForQuestionAnswering": [WeightRenaming(r"^model\.", "transformer.")],
+        "MinistralForQuestionAnswering": [WeightRenaming(r"^model\.", "transformer.")],
+        "SeedOssForQuestionAnswering": [WeightRenaming(r"^model\.", "transformer.")],
+        "SmolLM3ForQuestionAnswering": [WeightRenaming(r"^model\.", "transformer.")],
     }
 
     mapping["Tipsv2DptForNormalEstimation"] = [

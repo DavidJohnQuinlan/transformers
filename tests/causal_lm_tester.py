@@ -395,6 +395,35 @@ class CausalLMModelTest(
             (self.model_tester.batch_size, self.model_tester.seq_length),
         )
 
+    def test_question_answering_head_loads_prefixed_base_weights(self):
+        """
+        Save a checkpoint with `ForCausalLM`, then load it with `ForQuestionAnswering.from_pretrained()`. For some
+        of the Llama family of models, the checkpoint will have a `model` prefix with the QA model loaded expecting
+        a `transformer` prefix, which causes the models weights to be randomly initialised.
+        """
+        if self.model_tester.question_answering_class is None:
+            self.skipTest("Model does not support question answering")
+
+        config, _ = self.model_tester.prepare_config_and_inputs_for_common()
+        qa_class = self.model_tester.question_answering_class
+        causal_class = self.model_tester.causal_lm_class
+        if qa_class.base_model_prefix == causal_class.base_model_prefix:
+            self.skipTest("No QA head with a prefix differing from the causal base")
+        qa_model, causal_model = qa_class(config=config), causal_class(config=config)
+
+        qa_head_keys = {k for k in qa_model.state_dict() if not k.startswith(qa_model.base_model_prefix + ".")}
+        self.assertTrue(qa_head_keys)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            causal_model.save_pretrained(tmp)
+            _, info = qa_model.from_pretrained(tmp, output_loading_info=True)
+
+        self.assertEqual(
+            set(info["missing_keys"]),
+            qa_head_keys,
+            f"{qa_class.__name__}: expected only the QA head to be missing, got {info['missing_keys']}",
+        )
+
     @require_flash_attn
     @require_torch_accelerator
     @pytest.mark.flash_attn_test
